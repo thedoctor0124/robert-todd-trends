@@ -32,6 +32,7 @@
 /storage/framework/views/*
 /storage/logs/*
 /error_log
+/database/sync/
 /vendor
 /.certs
 Homestead.json

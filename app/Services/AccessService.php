@@ -20,7 +20,8 @@ class AccessService
         ?string $squarePaymentId = null,
         float $amountPaid = 0,
         ?string $discountCode = null,
-        ?array $deliveryAddress = null
+        ?array $deliveryAddress = null,
+        bool $sendEmail = true,
     ): Purchase {
         $purchase = Purchase::updateOrCreate(
             ['user_id' => $user->id, 'publication_id' => $publication->id],
@@ -33,7 +34,7 @@ class AccessService
             ], $this->deliveryAddressAttributes($deliveryAddress))
         );
 
-        if ($isFree) {
+        if ($isFree && $sendEmail) {
             Mail::to($user)->send(new FreeAccessGranted($user, 'publication', $publication));
         }
 
@@ -47,7 +48,8 @@ class AccessService
         bool $isFree = true,
         ?string $squarePaymentId = null,
         float $amountPaid = 0,
-        ?array $deliveryAddress = null
+        ?array $deliveryAddress = null,
+        bool $sendEmail = true,
     ): Subscription {
         $subscription = Subscription::updateOrCreate(
             ['user_id' => $user->id, 'season_id' => $season->id],
@@ -60,7 +62,7 @@ class AccessService
             ], $this->deliveryAddressAttributes($deliveryAddress))
         );
 
-        if ($isFree) {
+        if ($isFree && $sendEmail) {
             Mail::to($user)->send(new FreeAccessGranted($user, 'subscription', $season));
         }
 

@@ -28,6 +28,9 @@
             <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 Users
             </a>
+            <a href="{{ route('admin.send-access') }}" class="nav-link {{ request()->routeIs('admin.send-access') ? 'active' : '' }}">
+                Send Access Link
+            </a>
             <a href="{{ route('admin.discount-codes.index') }}" class="nav-link {{ request()->routeIs('admin.discount-codes.*') ? 'active' : '' }}">
                 Discount Codes
             </a>

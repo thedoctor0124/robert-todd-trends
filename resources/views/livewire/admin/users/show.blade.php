@@ -5,7 +5,10 @@
             <h3 class="font-serif mb-0">{{ $user->name }}</h3>
             <span class="text-muted small">{{ $user->email }}</span>
         </div>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex gap-2">
+            <a href="{{ route('admin.send-access', ['user' => $user->id]) }}" class="btn btn-sm btn-primary">
+                Send access link
+            </a>
             <button wire:click="toggleAdmin" class="btn btn-sm {{ $user->is_admin ? 'btn-outline-danger' : 'btn-outline-primary' }}">
                 {{ $user->is_admin ? 'Remove Admin' : 'Make Admin' }}
             </button>

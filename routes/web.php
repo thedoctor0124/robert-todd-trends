@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\InvoiceController;
 use App\Livewire\Account\Orders as AccountOrders;
 use App\Livewire\Account\Settings as AccountSettings;
+use App\Livewire\AccessInvite\Claim as AccessInviteClaim;
+use App\Livewire\Admin\SendAccess;
 use App\Livewire\Admin\Seasons\Create;
 use App\Livewire\Admin\Seasons\Edit;
 use App\Livewire\Admin\Seasons\Index;
@@ -27,6 +29,7 @@ use Illuminate\Support\Str;
 // Public
 Route::view('/', 'welcome')->name('home');
 Route::view('/terms-and-conditions', 'legal.terms')->name('terms');
+Route::get('/access/invite/{token}', AccessInviteClaim::class)->name('access-invite.claim');
 
 // Guest auth
 Route::middleware('guest')->group(function () {
@@ -213,6 +216,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/publications/{publication}/edit', App\Livewire\Admin\Publications\Edit::class)->name('publications.edit');
     Route::get('/users', App\Livewire\Admin\Users\Index::class)->name('users.index');
     Route::get('/users/{user}', Show::class)->name('users.show');
+    Route::get('/send-access', SendAccess::class)->name('send-access');
     Route::get('/discount-codes', App\Livewire\Admin\DiscountCodes\Index::class)->name('discount-codes.index');
     Route::get('/discount-codes/create', App\Livewire\Admin\DiscountCodes\Create::class)->name('discount-codes.create');
     Route::get('/discount-codes/{discountCode}/edit', App\Livewire\Admin\DiscountCodes\Edit::class)->name('discount-codes.edit');
