@@ -1,5 +1,7 @@
 # Google Cloud VM Deployment Notes
 
+**Full deploy & SSH/testing guide for agents:** [GCP-DEPLOY.md](GCP-DEPLOY.md)
+
 - Project: `trends-rt-20260430`
 - VM: `trends-web-1`
 - Zone: `europe-west2-a`

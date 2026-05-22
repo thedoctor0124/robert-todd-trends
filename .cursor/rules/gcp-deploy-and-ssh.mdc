@@ -1,0 +1,20 @@
+---
+description: GCP deploy (git via thedoctor0124), TrendsGCP SSH, and syncing production DB/uploads for local testing
+alwaysApply: false
+---
+
+# GCP deploy & SSH (Robert Todd Trends)
+
+Read **`deployment/GCP-DEPLOY.md`** and **`AGENTS.md`** before deploying or pulling production state.
+
+## Deploy (always use git, not rsync)
+
+1. `gh auth switch --user thedoctor0124` and `gh auth setup-git` if push fails with 403.
+2. `git push origin main` to `thedoctor0124/robert-todd-trends`.
+3. On server: `ssh TrendsGCP` → `cd /var/www/looptrends` → `git pull origin main` → `composer install --no-dev --optimize-autoloader` → `npm ci && npm run build` → `php artisan migrate --force` → `php artisan optimize:clear` → `php artisan config:cache`.
+
+## SSH / testing
+
+- Alias: **`TrendsGCP`** — app at `/var/www/looptrends`, live at https://trends.roberttodds.com
+- Production DB/uploads are **not** in git. Sync via SSH: mysqldump to `database/sync/production.sql`, `rsync` `public/uploads/` (see GCP-DEPLOY.md).
+- Read production `.env` on server with `grep`; never commit secrets or run `migrate:fresh` on production.
