@@ -1,0 +1,13 @@
+#!include:.gitignore
+
+# Local dev uploads (can be hundreds of MB); not used in the container build
+storage/app/private/*
+!storage/app/private/.gitignore
+storage/app/public/*
+!storage/app/public/.gitignore
+
+# Archive not needed for Docker build
+/heyzine-flipbook.zip
+
+# Shrink upload; Git metadata not needed for Cloud Build
+.git/

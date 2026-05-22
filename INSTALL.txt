@@ -1,0 +1,35 @@
+Robert Todd Trends — Krystal (no-SSH) install
+=============================================
+
+1) Upload & extract
+   - Upload looptrends-krystal.zip and extract it into your hosting space (e.g. under your domain folder).
+
+2) Point the site at the "public" folder
+   - In Krystal (or cPanel), set the domain’s **document root** to the **public** directory inside this package
+     (the folder that contains index.php and .htaccess).
+   - Do NOT use the project root as the web root — Laravel needs /public.
+
+3) Edit .env (File Manager → edit .env)
+   - APP_URL = your full site URL with https
+   - DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD = from Krystal MySQL
+   - Fill mail (SMTP), Square, Google OAuth when ready
+   - APP_KEY is already set — do not leave it blank
+
+4) Database tables (one-time — no SSH)
+   - Open **MIGRATE_ONCE.txt** in the same folder as this file: it contains your one-time **?key=...** secret.
+   - After .env is saved, visit the URL shown there once (same host as APP_URL).
+   - When the page says OK, delete **public/run-migrations-once.php** immediately.
+   - Alternative: php artisan migrate --force (if you have SSH or a PHP task runner).
+
+5) Permissions
+   - Folders storage/ and bootstrap/cache/ must be writable by the web server (Krystal often sets this
+     on extract; if you see errors, set those two trees to 755 or 775 per host docs).
+
+6) Uploads / PDFs / covers
+   - This build uses STORAGE_USE_PUBLIC_PATH=true so files go under public/uploads/ — no
+     "php artisan storage:link" is required.
+
+7) After first login
+   - Remove this INSTALL.txt from the web root if it was extracted into a web-accessible path (optional).
+
+Support: see README.md in the package for local development and optional Google Cloud Storage.

@@ -1,0 +1,622 @@
+// Typography: Gill Sans (UI / body) + Adobe Garamond (headings).
+// Licensed fonts — load via Adobe Fonts; set ADOBE_FONTS_KIT_ID in .env (see partials/adobe-fonts).
+// If your kit uses different CSS family names (e.g. gill-sans-nova), match them in the stacks below.
+$font-family-sans-serif: 'gill-sans', 'Gill Sans', 'Gill Sans MT', Calibri, sans-serif;
+$headings-font-family: 'adobe-garamond-pro', 'Adobe Garamond Pro', 'Adobe Garamond', Garamond, 'Times New Roman', serif;
+
+$navy: rgb(56, 56, 56);
+$cream: #faf8f5;
+$gold: #c9a96e;
+$warm-gray: #6b6b6b;
+$light-gray: #f0ede8;
+
+$primary: $navy;
+$secondary: $gold;
+$light: $cream;
+$body-bg: $cream;
+$body-color: $navy;
+
+$headings-font-weight: 400;
+$headings-color: $navy;
+
+$btn-border-radius: 0;
+$btn-border-radius-sm: 0;
+$btn-border-radius-lg: 0;
+$btn-padding-y: 0.625rem;
+$btn-padding-x: 1.75rem;
+$btn-font-weight: 500;
+$btn-letter-spacing: 0.05em;
+
+$card-border-radius: 0;
+$card-border-width: 0;
+
+$input-border-radius: 0;
+$input-border-radius-sm: 0;
+$input-border-radius-lg: 0;
+
+$link-color: $navy;
+$link-hover-color: $gold;
+
+$navbar-light-color: $navy;
+$navbar-light-hover-color: $gold;
+$navbar-light-active-color: $gold;
+
+// Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// Custom styles
+body {
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.viewer-page {
+    font-family: $font-family-sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    letter-spacing: 0.1em;
+}
+
+.btn {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: $navy;
+    border-color: $navy;
+    &:hover, &:focus {
+        background-color: darken($navy, 5%);
+        border-color: darken($navy, 5%);
+    }
+}
+
+.btn-secondary {
+    background-color: $gold;
+    border-color: $gold;
+    color: #fff;
+    &:hover, &:focus {
+        background-color: darken($gold, 10%);
+        border-color: darken($gold, 10%);
+        color: #fff;
+    }
+}
+
+.btn-outline-primary {
+    color: $navy;
+    border-color: $navy;
+    &:hover, &:focus {
+        background-color: $navy;
+        color: #fff;
+    }
+}
+
+.btn-outline-secondary {
+    color: $gold;
+    border-color: $gold;
+    &:hover, &:focus {
+        background-color: $gold;
+        color: #fff;
+    }
+}
+
+// Navbar — don’t shrink image via em-based brand font-size
+.navbar .navbar-brand.brand-mark {
+    font-size: inherit;
+    line-height: 0;
+}
+
+.navbar-brand {
+    font-family: $headings-font-family;
+    font-weight: 400;
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+}
+
+// Combined logo (navbar, footer, admin)
+.brand-mark {
+    line-height: 1.1;
+    text-align: center;
+
+    &__logo {
+        display: block;
+        width: auto;
+        object-fit: contain;
+        vertical-align: middle;
+
+        // Main header / guest nav (no base height:auto — it overrode --header in some builds)
+        &--header {
+            height: 100px !important;
+            width: auto !important;
+            max-height: none !important;
+            min-height: 100px !important;
+            max-width: min(100%, calc(100vw - 2rem));
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        &--sm {
+            height: auto !important;
+            max-height: 2.5rem !important;
+            min-height: 0 !important;
+            max-width: 10rem;
+        }
+    }
+}
+
+// Beat Bootstrap reboot `img { max-width: 100%; height: auto }` on the header mark
+.navbar .brand-mark__logo--header {
+    height: 100px !important;
+    width: auto !important;
+    max-height: none !important;
+    min-height: 100px !important;
+}
+
+.navbar {
+    border-bottom: 1px solid rgba($navy, 0.08);
+}
+
+.nav-link {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+// Hero sections
+.hero {
+    background-color: $navy;
+    color: #fff;
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+
+    &-lg {
+        padding: 8rem 0;
+    }
+
+    h1, h2, h3 {
+        color: #fff;
+    }
+
+    .lead {
+        color: rgba(255,255,255,0.8);
+        font-weight: 300;
+    }
+
+    .btn-outline-light {
+        border-width: 1px;
+        &:hover {
+            background-color: #fff;
+            color: $navy;
+        }
+    }
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba($navy, 0.92), rgba($navy, 0.7));
+    z-index: 1;
+}
+
+.hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+// Publication cards
+.publication-card {
+    transition: all 0.4s ease;
+    border: 1px solid rgba($navy, 0.06);
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba($navy, 0.12);
+    }
+
+    .card-img-top {
+        height: 280px;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    &:hover .card-img-top {
+        transform: scale(1.03);
+    }
+
+    .card-img-wrapper {
+        overflow: hidden;
+        height: 280px;
+        background-color: $light-gray;
+    }
+
+    // Buttons used to open the details modal (cover & title areas of the card)
+    .publication-card-trigger {
+        display: block;
+        width: 100%;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        color: inherit;
+        text-align: inherit;
+        cursor: pointer;
+        appearance: none;
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $gold;
+            outline-offset: 2px;
+        }
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-text {
+        font-size: 0.85rem;
+        color: $warm-gray;
+    }
+
+    .price-tag {
+        font-family: $headings-font-family;
+        font-size: 1.1rem;
+        color: $gold;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+    }
+}
+
+// Season cards
+.season-card {
+    transition: all 0.4s ease;
+    border: 1px solid rgba($navy, 0.06);
+    overflow: hidden;
+    position: relative;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba($navy, 0.12);
+    }
+
+    .season-card-img {
+        height: 320px;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    &:hover .season-card-img {
+        transform: scale(1.03);
+    }
+
+    .season-card-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2rem;
+        background: linear-gradient(transparent, rgba($navy, 0.85));
+        color: #fff;
+    }
+}
+
+// Placeholder for items without cover images
+.cover-placeholder {
+    height: 280px;
+    background: linear-gradient(135deg, $navy 0%, lighten($navy, 12%) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-family: $headings-font-family;
+    font-size: 3rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+}
+
+.season-cover-placeholder {
+    height: 320px;
+    background: linear-gradient(135deg, $navy 0%, lighten($navy, 12%) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-family: $headings-font-family;
+    font-size: 3rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+}
+
+// Section spacing
+.section {
+    padding: 5rem 0;
+}
+
+.section-sm {
+    padding: 3rem 0;
+}
+
+.section-heading {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-subheading {
+    color: $warm-gray;
+    font-weight: 300;
+    margin-bottom: 3rem;
+}
+
+// Dividers
+.divider {
+    width: 60px;
+    height: 2px;
+    background-color: $gold;
+    margin-bottom: 2rem;
+}
+
+.divider-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// Badge overrides
+.badge-gold {
+    background-color: $gold;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.35em 0.75em;
+}
+
+.badge-navy {
+    background-color: $navy;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.35em 0.75em;
+}
+
+// Viewer
+.flipbook-viewer {
+    background-color: #000;
+    min-height: calc(100vh - 60px);
+
+    iframe {
+        width: 100%;
+        height: calc(100vh - 120px);
+        border: none;
+    }
+}
+
+.viewer-nav {
+    background-color: $navy;
+    padding: 0.75rem 1.5rem;
+
+    a {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        transition: color 0.2s;
+
+        &:hover, &.active {
+            color: #fff;
+        }
+    }
+}
+
+// Admin styles
+.admin-sidebar {
+    background-color: $navy;
+    min-height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    .nav-link {
+        color: rgba(255,255,255,0.7);
+        padding: 0.75rem 1.5rem;
+        font-size: 0.8rem;
+        border-left: 3px solid transparent;
+
+        &:hover {
+            color: #fff;
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        &.active {
+            color: $gold;
+            border-left-color: $gold;
+            background-color: rgba(255,255,255,0.05);
+        }
+    }
+}
+
+.admin-content {
+    margin-left: 250px;
+    padding: 2rem;
+    min-height: 100vh;
+    background-color: #f8f7f5;
+}
+
+.admin-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-card {
+    background: #fff;
+    padding: 1.5rem;
+    border: 1px solid rgba($navy, 0.06);
+
+    .stat-value {
+        font-family: $headings-font-family;
+        font-size: 2rem;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        color: $navy;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $warm-gray;
+    }
+}
+
+// Tables
+.table-minimal {
+    th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: $warm-gray;
+        font-weight: 600;
+        border-bottom-width: 1px;
+    }
+
+    td {
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+}
+
+// Auth pages
+.auth-card {
+    max-width: 440px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 3rem;
+    border: 1px solid rgba($navy, 0.06);
+}
+
+.google-btn {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1.5rem;
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: #f8f8f8;
+        border-color: #ccc;
+        color: #333;
+    }
+
+    img {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Checkout
+.checkout-summary {
+    background: #fff;
+    border: 1px solid rgba($navy, 0.06);
+    padding: 2rem;
+
+    .summary-total {
+        font-family: $headings-font-family;
+        font-size: 1.5rem;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        color: $navy;
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .hero {
+        padding: 4rem 0;
+    }
+
+    .section {
+        padding: 3rem 0;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+
+    .admin-content {
+        margin-left: 0;
+    }
+
+    .publication-card .card-img-wrapper,
+    .publication-card .card-img-top {
+        height: 200px;
+    }
+
+    .cover-placeholder {
+        height: 200px;
+    }
+}
+
+// Toasts and alerts
+.alert-premium {
+    background-color: lighten($gold, 30%);
+    border: 1px solid $gold;
+    color: darken($gold, 20%);
+}
+
+// Utility
+.text-gold { color: $gold !important; }
+.bg-navy { background-color: $navy !important; }
+.bg-cream { background-color: $cream !important; }
+.bg-light-gray { background-color: $light-gray !important; }
+.font-serif {
+    font-family: $headings-font-family !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.1em !important;
+}
+.ls-wide { letter-spacing: 0.1em; }

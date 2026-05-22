@@ -1,0 +1,15 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-t'
+      - europe-west2-docker.pkg.dev/$PROJECT_ID/looptrends/app:$BUILD_ID
+      - '-t'
+      - europe-west2-docker.pkg.dev/$PROJECT_ID/looptrends/app:latest
+      - .
+images:
+  - europe-west2-docker.pkg.dev/$PROJECT_ID/looptrends/app:$BUILD_ID
+  - europe-west2-docker.pkg.dev/$PROJECT_ID/looptrends/app:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -1,0 +1,31 @@
+# =============================================================================
+# Use ONLY if the site MUST be served from the folder ABOVE Laravel's "public"
+# (e.g. document root is public_html/ and your app lives as public_html/public/…).
+#
+# Rename/copy this file to:  .htaccess
+# Location: same directory that CONTAINS the "public" folder (often public_html/).
+#
+# Better option: in Krystal/cPanel set "Document root" / "Web root" to
+#   .../public_html/public
+# and do NOT use this file.
+# =============================================================================
+
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks -Indexes
+    RewriteEngine On
+
+    # Do not rewrite if the request is already under /public/ (avoids double-prefix).
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Optional: block direct web access to .env if it sits next to this .htaccess
+<Files ".env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</Files>

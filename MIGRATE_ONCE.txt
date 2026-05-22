@@ -1,0 +1,15 @@
+=== One-time database setup (no SSH) ===
+
+1. Finish editing .env (MySQL + APP_URL) and save.
+
+2. Open this URL once in your browser (same scheme + host as APP_URL, no trailing slash before /run):
+
+   YOUR_APP_URL_HERE/run-migrations-once.php?key=fce1f5c3facc0865084fd7964cfd0fa88f20dbcaca688cc7004e7285053843bf
+
+   Example: if APP_URL is https://trends.example.com then open:
+   https://trends.example.com/run-migrations-once.php?key=fce1f5c3facc0865084fd7964cfd0fa88f20dbcaca688cc7004e7285053843bf
+
+3. When the page says OK, delete: public/run-migrations-once.php
+
+--- copy key only (if needed) ---
+fce1f5c3facc0865084fd7964cfd0fa88f20dbcaca688cc7004e7285053843bf

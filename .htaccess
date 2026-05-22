@@ -1,0 +1,24 @@
+# Web root is the Laravel project root (e.g. public_html/). All HTTP requests must be
+# routed into the `public/` directory. Prefer pointing the vhost document root at `public/`
+# in the panel if the host allows it; otherwise this shim is required.
+
+php_value upload_max_filesize 128M
+php_value post_max_size 130M
+
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks -Indexes
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<Files ".env">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</Files>
