@@ -14,7 +14,12 @@ class Claim extends Component
 {
     public AccessInvite $invite;
 
-    public string $authMode = 'login';
+    /**
+     * 'choose' | 'login' | 'register'. Starts on the chooser: landing straight
+     * on a password form made first-time recipients think they needed an
+     * account they did not have.
+     */
+    public string $authMode = 'choose';
 
     public string $name = '';
 
@@ -48,6 +53,22 @@ class Claim extends Component
         if (Auth::check() && $this->emailsMatch(Auth::user())) {
             $this->completeClaim();
         }
+    }
+
+    public function chooseMode(string $mode): void
+    {
+        if (! in_array($mode, ['login', 'register'], true)) {
+            return;
+        }
+
+        $this->authMode = $mode;
+        $this->resetFormState();
+    }
+
+    public function backToChoice(): void
+    {
+        $this->authMode = 'choose';
+        $this->resetFormState();
     }
 
     public function login(): void
@@ -131,6 +152,17 @@ class Claim extends Component
         }
 
         $this->redirect($this->invite->redirectAfterClaim(), navigate: true);
+    }
+
+    /**
+     * Clear anything carried over from the other form so switching does not
+     * surface a stale password or validation error.
+     */
+    private function resetFormState(): void
+    {
+        $this->password = '';
+        $this->password_confirmation = '';
+        $this->resetValidation();
     }
 
     private function ensureEmailMatchesInvite(string $email): void
