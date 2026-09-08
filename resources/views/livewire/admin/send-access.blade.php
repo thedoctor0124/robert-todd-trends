@@ -64,15 +64,57 @@
                     </div>
 
                     @if($recipientMode === 'existing')
+                    <div class="mb-3">
+                        <label class="form-label small">Company</label>
+                        <select class="form-select" wire:model.live="company">
+                            <option value="" @selected($company === '')>{{ $recipientMode === 'existing' ? 'All companies' : 'No company' }}</option>
+                            @foreach($companies as $companyName)
+                                <option value="{{ $companyName }}" @selected($company === $companyName)>{{ $companyName }}</option>
+                            @endforeach
+                            @if($recipientMode === 'existing' && $missingCompanyCount)
+                                <option value="__none" @selected($company === '__none')>No company set ({{ $missingCompanyCount }})</option>
+                            @endif
+                            <option value="__new" @selected($company === '__new')>+ Add a new company&hellip;</option>
+                        </select>
+                        @error('company') <span class="text-danger small">{{ $message }}</span> @enderror
+
+                        @if($company === '__new')
+                            <input type="text" class="form-control mt-2" wire:model="newCompany"
+                                   placeholder="New company name">
+                            @error('newCompany') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @endif
+
+                        <div class="form-text">
+                            @if($recipientMode === 'existing')
+                                @if($company === '__none')
+                                    Showing customers with no company. Pick one, then choose their company above to assign it.
+                                @elseif($company === '__new')
+                                    Type the company name. It will be saved to whoever you pick below.
+                                @elseif($company === '')
+                                    Choose a company to narrow the customer list below.
+                                @else
+                                    The customer list is narrowed to this company, and it will be saved to whoever you pick.
+                                @endif
+                            @else
+                                Optional. Saved to their account when they claim the link.
+                            @endif
+                        </div>
+                    </div>
+
                         <div class="mb-3">
                             <label class="form-label small">Customer</label>
                             <select class="form-select" wire:model.live="userId">
                                 <option value="">Select a user...</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} — {{ $user->email }}</option>
+                                    <option value="{{ $user->id }}" @selected($userId === $user->id)>
+                                        {{ $user->name }} — {{ $user->email }}@if($user->company) ({{ $user->company }})@endif
+                                    </option>
                                 @endforeach
                             </select>
                             @error('userId') <span class="text-danger small">{{ $message }}</span> @enderror
+                            @if($users->isEmpty())
+                                <div class="form-text text-danger">No customers match this company.</div>
+                            @endif
                         </div>
                     @else
                         <div class="mb-3">
@@ -86,20 +128,44 @@
                             @error('email') <span class="text-danger small">{{ $message }}</span> @enderror
                             <div class="form-text">They will create a password when they open the link.</div>
                         </div>
-                    @endif
-
                     <div class="mb-3">
                         <label class="form-label small">Company</label>
-                        <input type="text" class="form-control" wire:model="company" placeholder="e.g. Marks &amp; Spencer">
+                        <select class="form-select" wire:model.live="company">
+                            <option value="" @selected($company === '')>{{ $recipientMode === 'existing' ? 'All companies' : 'No company' }}</option>
+                            @foreach($companies as $companyName)
+                                <option value="{{ $companyName }}" @selected($company === $companyName)>{{ $companyName }}</option>
+                            @endforeach
+                            @if($recipientMode === 'existing' && $missingCompanyCount)
+                                <option value="__none" @selected($company === '__none')>No company set ({{ $missingCompanyCount }})</option>
+                            @endif
+                            <option value="__new" @selected($company === '__new')>+ Add a new company&hellip;</option>
+                        </select>
                         @error('company') <span class="text-danger small">{{ $message }}</span> @enderror
+
+                        @if($company === '__new')
+                            <input type="text" class="form-control mt-2" wire:model="newCompany"
+                                   placeholder="New company name">
+                            @error('newCompany') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @endif
+
                         <div class="form-text">
                             @if($recipientMode === 'existing')
-                                Prefilled from their account. Editing this updates it.
+                                @if($company === '__none')
+                                    Showing customers with no company. Pick one, then choose their company above to assign it.
+                                @elseif($company === '__new')
+                                    Type the company name. It will be saved to whoever you pick below.
+                                @elseif($company === '')
+                                    Choose a company to narrow the customer list below.
+                                @else
+                                    The customer list is narrowed to this company, and it will be saved to whoever you pick.
+                                @endif
                             @else
                                 Optional. Saved to their account when they claim the link.
                             @endif
                         </div>
                     </div>
+
+                    @endif
 
                     <div class="mb-3">
                         <label class="form-label small">Access type</label>
