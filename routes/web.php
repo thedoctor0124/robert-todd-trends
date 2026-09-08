@@ -221,4 +221,5 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/discount-codes/create', App\Livewire\Admin\DiscountCodes\Create::class)->name('discount-codes.create');
     Route::get('/discount-codes/{discountCode}/edit', App\Livewire\Admin\DiscountCodes\Edit::class)->name('discount-codes.edit');
     Route::get('/orders', App\Livewire\Admin\Orders\Index::class)->name('orders.index');
+    Route::get('/settings', App\Livewire\Admin\Settings::class)->name('settings');
 });

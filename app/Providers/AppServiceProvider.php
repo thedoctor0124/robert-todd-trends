@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Filesystem\GoogleCloudStorageFilesystemAdapter;
+use App\Services\MailSettings;
 use Google\Cloud\Storage\StorageClient;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
@@ -30,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
         if (str_starts_with((string) config('app.url'), 'https') || $this->app->environment('production')) {
             URL::forceScheme('https');
         }
+
+        // SMTP credentials live in app_settings, not the environment. Applying them
+        // as the mail manager is resolved keeps the database out of the path of
+        // requests that never send mail.
+        $this->app->resolving('mail.manager', function () {
+            MailSettings::apply();
+        });
 
         Storage::extend('gcs', function ($app, array $config) {
             $clientOptions = ['projectId' => $config['project_id']];

@@ -34,6 +34,9 @@
             <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 Orders
             </a>
+            <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
+                Settings
+            </a>
         </nav>
         <div class="p-3 border-top border-white-10">
             <a href="{{ route('dashboard') }}" class="nav-link small">

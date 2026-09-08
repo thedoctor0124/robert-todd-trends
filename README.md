@@ -99,6 +99,31 @@ export GCP_PROJECT=your-production-project-id
 
 Any user with an `@roberttodds.com` email is automatically granted admin access on registration or Google login. Admins can also manually toggle admin status for other users.
 
+## Email (Gmail via app password)
+
+Outgoing mail is configured in the admin portal at **Admin → Settings**, not in `.env`, so it can be
+changed without a redeploy. The stored values override the `MAIL_*` environment variables at runtime;
+if the settings are incomplete the `.env` values are used instead.
+
+To send through a Gmail or Google Workspace account:
+
+1. Enable **2-Step Verification** on the Google account — app passwords are unavailable without it.
+2. In **Google Account → Security → App passwords**, create a password and copy the 16 characters.
+3. In **Admin → Settings**, enter `smtp.gmail.com`, port `587`, TLS, the full account address as the
+   username, and the app password. Spaces are stripped on save.
+4. Set the **From Address**, or leave it blank to send as the username. Gmail rejects any other
+   address unless it is registered as a verified *Send mail as* alias on that account.
+5. Use **Send Test Email** to confirm; SMTP errors are shown verbatim on the page.
+
+Notes:
+
+- The app password is encrypted at rest with `APP_KEY`. Rotating `APP_KEY` makes it unreadable, and
+  the portal will report "Not configured" until a new password is entered.
+- Gmail imposes a daily send limit (roughly 500 messages for consumer accounts, 2,000 for Workspace).
+  A dedicated transactional provider is a better fit if volume grows.
+- Queue workers hold the settings for the life of the process. Restart the worker (or `queue:restart`)
+  after changing them.
+
 ## Architecture
 
 | Layer | Technology |
