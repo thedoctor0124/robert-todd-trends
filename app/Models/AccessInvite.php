@@ -19,6 +19,9 @@ class AccessInvite extends Model
         'expires_at',
         'redeemed_at',
         'redeemed_by_user_id',
+        'sent_at',
+        'send_failed_at',
+        'send_error',
     ];
 
     protected function casts(): array
@@ -26,6 +29,8 @@ class AccessInvite extends Model
         return [
             'expires_at' => 'datetime',
             'redeemed_at' => 'datetime',
+            'sent_at' => 'datetime',
+            'send_failed_at' => 'datetime',
         ];
     }
 
@@ -62,6 +67,41 @@ class AccessInvite extends Model
     public function isValid(): bool
     {
         return ! $this->isRedeemed() && ! $this->isExpired();
+    }
+
+    public function deliveryFailed(): bool
+    {
+        return $this->send_failed_at !== null;
+    }
+
+    public function wasDelivered(): bool
+    {
+        return $this->sent_at !== null && $this->send_failed_at === null;
+    }
+
+    /**
+     * Invites created before delivery tracking existed have no record either
+     * way, so they are reported as unknown rather than assumed successful.
+     */
+    public function deliveryIsUnknown(): bool
+    {
+        return $this->sent_at === null && $this->send_failed_at === null;
+    }
+
+    /**
+     * True when someone should act: the invite is still usable but the email
+     * did not reach the recipient.
+     */
+    public function needsResend(): bool
+    {
+        return $this->deliveryFailed() && $this->isValid();
+    }
+
+    public function scopeUndelivered($query)
+    {
+        return $query->whereNotNull('send_failed_at')
+            ->whereNull('redeemed_at')
+            ->where('expires_at', '>', now());
     }
 
     public function claimUrl(): string

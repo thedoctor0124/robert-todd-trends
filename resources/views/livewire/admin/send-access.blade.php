@@ -6,10 +6,42 @@
         </p>
     </div>
 
+    @if($feedbackStatus)
+        <div class="alert {{ $feedbackStatus === 'success' ? 'alert-success' : 'alert-danger' }}">
+            @if($feedbackStatus === 'success')
+                {{ $feedbackMessage }}
+            @else
+                <strong>Email not sent.</strong>
+                <div class="mt-1 small" style="word-break: break-word;">{{ $feedbackMessage }}</div>
+                <div class="mt-2 small mb-0">
+                    Check <a href="{{ route('admin.settings') }}" class="alert-link">Settings &rarr; Email</a>,
+                    then use <strong>Resend</strong>. The access link below still works if you share it directly.
+                </div>
+            @endif
+        </div>
+    @endif
+
     @if($sentClaimUrl)
         <div class="alert alert-success">
             <strong>Access link ready.</strong> Copy and share if the recipient does not receive the email:
             <div class="mt-2 small font-monospace text-break">{{ $sentClaimUrl }}</div>
+        </div>
+    @endif
+
+    @if($undeliveredInvites->isNotEmpty())
+        <div class="alert alert-danger">
+            <strong>{{ $undeliveredInvites->count() }}
+                {{ Str::plural('invite', $undeliveredInvites->count()) }} could not be emailed.</strong>
+            These links are still valid but the recipient was never told. Fix sending under
+            <a href="{{ route('admin.settings') }}" class="alert-link">Settings &rarr; Email</a>, then resend.
+            <ul class="mb-0 mt-2 small">
+                @foreach($undeliveredInvites as $failed)
+                    <li>
+                        {{ $failed->email }} &mdash; {{ $failed->itemTitle() }}
+                        <span class="text-muted">(failed {{ $failed->send_failed_at->diffForHumans() }})</span>
+                    </li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -90,43 +122,64 @@
                 </form>
             </div>
         </div>
+    </div>
 
-        <div class="col-lg-5">
-            <div class="bg-white p-4" style="border: 1px solid rgba(56,56,56,0.06);">
-                <h6 class="text-uppercase ls-wide small mb-3">Recent invites</h6>
-                @if($recentInvites->isEmpty())
-                    <p class="text-muted small mb-0">No invites sent yet.</p>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-sm table-minimal mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Email</th>
-                                    <th>Item</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($recentInvites as $invite)
-                                    <tr>
-                                        <td class="small">{{ $invite->email }}</td>
-                                        <td class="small">{{ $invite->itemTitle() }}</td>
-                                        <td class="small">
-                                            @if($invite->isRedeemed())
-                                                <span class="text-success">Claimed</span>
-                                            @elseif($invite->isExpired())
-                                                <span class="text-danger">Expired</span>
-                                            @else
-                                                <span class="text-muted">Pending</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+    <div class="bg-white p-4" style="border: 1px solid rgba(56,56,56,0.06);">
+        <h6 class="text-uppercase ls-wide small mb-3">Recent invites</h6>
+        @if($recentInvites->isEmpty())
+            <p class="text-muted small mb-0">No invites sent yet.</p>
+        @else
+            <div class="table-responsive">
+                <table class="table table-sm table-minimal mb-0">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Item</th>
+                            <th>Status</th>
+                            <th>Delivery</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentInvites as $invite)
+                            <tr>
+                                <td class="small">{{ $invite->email }}</td>
+                                <td class="small">{{ $invite->itemTitle() }}</td>
+                                <td class="small">
+                                    @if($invite->isRedeemed())
+                                        <span class="text-success">Claimed</span>
+                                    @elseif($invite->isExpired())
+                                        <span class="text-danger">Expired</span>
+                                    @else
+                                        <span class="text-muted">Pending</span>
+                                    @endif
+                                </td>
+                                <td class="small">
+                                    @if($invite->deliveryFailed())
+                                        <span class="text-danger" title="{{ $invite->send_error }}">Failed</span>
+                                    @elseif($invite->wasDelivered())
+                                        <span class="text-success">Sent</span>
+                                    @else
+                                        <span class="text-muted" title="Sent before delivery was tracked">Unknown</span>
+                                    @endif
+                                </td>
+                                <td class="small text-end">
+                                    @if($invite->isValid())
+                                        <button type="button"
+                                                wire:click="resendInvite({{ $invite->id }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="resendInvite({{ $invite->id }})"
+                                                class="btn btn-sm btn-outline-primary py-0 px-2">
+                                            <span wire:loading.remove wire:target="resendInvite({{ $invite->id }})">Resend</span>
+                                            <span wire:loading wire:target="resendInvite({{ $invite->id }})">&hellip;</span>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </div>
+        @endif
     </div>
 </div>

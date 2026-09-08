@@ -30,13 +30,58 @@ class AccessInviteService
             default => throw new InvalidArgumentException('Invalid access type.'),
         };
 
-        try {
-            Mail::to($email)->send(new FreeAccessInvite($invite));
-        } catch (\Throwable $e) {
-            report($e);
-        }
+        $this->deliver($invite);
 
         return $invite;
+    }
+
+    /**
+     * Send the invite email again, e.g. after fixing SMTP credentials. Returns
+     * true when it left the building.
+     */
+    public function resend(AccessInvite $invite): bool
+    {
+        if (! $invite->isValid()) {
+            throw new InvalidArgumentException('This invite has already been claimed or has expired.');
+        }
+
+        return $this->deliver($invite);
+    }
+
+    /**
+     * Send the invite and record the outcome on the row.
+     *
+     * A failure is deliberately not rethrown: the invite itself is already
+     * created and its claim URL still works, so losing the record would be
+     * worse than a failed email. The outcome is persisted instead, so callers
+     * and the admin UI can see that nothing was delivered — previously the
+     * exception was swallowed and a dead invite looked identical to a good one.
+     */
+    private function deliver(AccessInvite $invite): bool
+    {
+        try {
+            Mail::to($invite->email)->send(new FreeAccessInvite($invite));
+        } catch (\Throwable $e) {
+            report($e);
+
+            $invite->update([
+                'sent_at' => null,
+                'send_failed_at' => now(),
+                // SMTP errors carry multi-line server chatter; keep it short
+                // enough to render in the admin table.
+                'send_error' => Str::limit(trim($e->getMessage()), 500),
+            ]);
+
+            return false;
+        }
+
+        $invite->update([
+            'sent_at' => now(),
+            'send_failed_at' => null,
+            'send_error' => null,
+        ]);
+
+        return true;
     }
 
     public function redeem(AccessInvite $invite, User $user): void

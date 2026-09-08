@@ -7,6 +7,7 @@ use App\Models\Publication;
 use App\Models\Season;
 use App\Models\User;
 use App\Services\AccessInviteService;
+use InvalidArgumentException;
 use Livewire\Component;
 
 class SendAccess extends Component
@@ -24,6 +25,15 @@ class SendAccess extends Component
     public int $grantItemId = 0;
 
     public ?string $sentClaimUrl = null;
+
+    /**
+     * Outcome of the last send or resend, rendered inline on the page. Kept as
+     * component state rather than a session flash so the message sits next to
+     * the form and the delivery error is readable in full.
+     */
+    public ?string $feedbackStatus = null;
+
+    public string $feedbackMessage = '';
 
     public function mount(): void
     {
@@ -63,6 +73,9 @@ class SendAccess extends Component
 
     public function sendInvite(AccessInviteService $service): void
     {
+        $this->feedbackStatus = null;
+        $this->feedbackMessage = '';
+
         $this->validate($this->rules());
 
         $existingUser = null;
@@ -84,7 +97,45 @@ class SendAccess extends Component
         $this->reset(['grantItemId']);
         $this->grantItemId = 0;
 
-        session()->flash('success', 'Access link created for '.$invite->email.'. An email was sent when mail is configured.');
+        if ($invite->deliveryFailed()) {
+            // The invite exists and its link works, but nobody has been told.
+            $this->feedbackStatus = 'error';
+            $this->feedbackMessage = 'Access link created for '.$invite->email.
+                ', but the email could NOT be sent: '.$invite->send_error;
+
+            return;
+        }
+
+        $this->feedbackStatus = 'success';
+        $this->feedbackMessage = 'Access link created and emailed to '.$invite->email.'.';
+    }
+
+    public function resendInvite(int $inviteId, AccessInviteService $service): void
+    {
+        $this->feedbackStatus = null;
+        $this->feedbackMessage = '';
+
+        $invite = AccessInvite::findOrFail($inviteId);
+
+        try {
+            $service->resend($invite);
+        } catch (InvalidArgumentException $e) {
+            $this->feedbackStatus = 'error';
+            $this->feedbackMessage = $e->getMessage();
+
+            return;
+        }
+
+        if ($invite->deliveryFailed()) {
+            $this->feedbackStatus = 'error';
+            $this->feedbackMessage = 'Still could not email '.$invite->email.': '.$invite->send_error;
+
+            return;
+        }
+
+        $this->sentClaimUrl = $invite->claimUrl();
+        $this->feedbackStatus = 'success';
+        $this->feedbackMessage = 'Invite re-sent to '.$invite->email.'.';
     }
 
     public function render()
@@ -96,6 +147,10 @@ class SendAccess extends Component
             'recentInvites' => AccessInvite::with(['publication', 'season', 'user'])
                 ->orderByDesc('created_at')
                 ->limit(15)
+                ->get(),
+            'undeliveredInvites' => AccessInvite::with(['publication', 'season'])
+                ->undelivered()
+                ->orderByDesc('created_at')
                 ->get(),
         ])->layout('layouts.admin', ['title' => 'Send Access Link']);
     }
