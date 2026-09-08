@@ -10,12 +10,12 @@
             <div class="col-md-5">
                 <div class="d-flex gap-2">
                     <select class="form-select" wire:model.live="company">
-                        <option value="">All companies</option>
+                        <option value="" @selected($company === '')>All companies</option>
                         @foreach($companies as $companyName)
-                            <option value="{{ $companyName }}">{{ $companyName }}</option>
+                            <option value="{{ $companyName }}" @selected($company === $companyName)>{{ $companyName }}</option>
                         @endforeach
                         @if($missingCompanyCount)
-                            <option value="__none">No company set ({{ $missingCompanyCount }})</option>
+                            <option value="__none" @selected($company === '__none')>No company set ({{ $missingCompanyCount }})</option>
                         @endif
                     </select>
                     @if($search !== '' || $company !== '')

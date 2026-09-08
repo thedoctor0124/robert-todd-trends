@@ -183,6 +183,31 @@ class AdminUserCompanyTest extends TestCase
         $this->assertNull($user->refresh()->company);
     }
 
+    /**
+     * A filtered URL can be bookmarked or shared, so the dropdown must show the
+     * active company on a fresh page load rather than relying on Livewire's JS
+     * to correct it after render.
+     */
+    public function test_a_filtered_url_marks_the_company_as_selected(): void
+    {
+        User::factory()->create(['name' => 'Ada Vogue', 'email' => 'ada@vogue.com', 'company' => 'Vogue']);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.users.index', ['company' => 'Vogue']))
+            ->assertOk()
+            ->assertSee('<option value="Vogue" selected>', escape: false);
+    }
+
+    public function test_an_unfiltered_list_selects_all_companies(): void
+    {
+        $this->seedUsers();
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertDontSee('selected>Vogue', escape: false);
+    }
+
     public function test_the_user_list_stays_admin_only(): void
     {
         $user = User::factory()->create(['email' => 'punter@example.com']);
