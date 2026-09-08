@@ -15,6 +15,25 @@
         </div>
     </div>
 
+    <div class="bg-white p-4 mb-4" style="border: 1px solid rgba(56,56,56,0.06);">
+        <h6 class="text-uppercase ls-wide small mb-2">Company</h6>
+        <p class="text-muted small mb-3">
+            Shown in the user list and used for filtering. Leave blank if not known.
+        </p>
+        @if($companySaved)
+            <div class="alert alert-success small py-2">Company updated.</div>
+        @endif
+        <form wire:submit="saveCompany" class="row g-2 align-items-start">
+            <div class="col-md-8">
+                <input type="text" class="form-control" wire:model="company" placeholder="e.g. Marks &amp; Spencer">
+                @error('company') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Save Company</button>
+            </div>
+        </form>
+    </div>
+
     <div class="row g-4">
         {{-- Grant Access --}}
         <div class="col-md-6">

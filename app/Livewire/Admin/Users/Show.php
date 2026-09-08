@@ -18,9 +18,28 @@ class Show extends Component
 
     public bool $granted = false;
 
+    public string $company = '';
+
+    public bool $companySaved = false;
+
     public function mount(User $user)
     {
         $this->user = $user;
+        $this->company = (string) $user->company;
+    }
+
+    public function saveCompany(): void
+    {
+        $this->validate(['company' => 'nullable|string|max:255']);
+
+        $company = trim($this->company);
+
+        // Store a blank as NULL so "no company set" is one state, not two.
+        $this->user->update(['company' => $company === '' ? null : $company]);
+        $this->user->refresh();
+
+        $this->company = (string) $this->user->company;
+        $this->companySaved = true;
     }
 
     public function toggleAdmin()
