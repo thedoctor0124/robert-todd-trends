@@ -1,9 +1,14 @@
 <div>
-    <div class="mb-4">
-        <h3 class="font-serif mb-1">Send free access link</h3>
-        <p class="text-muted small mb-0">
-            Email a secure link so the recipient can sign in or register and open their publication. Works for existing customers or new accounts.
-        </p>
+    <div class="d-flex align-items-start mb-4">
+        <div>
+            <h3 class="font-serif mb-1">Send free access link</h3>
+            <p class="text-muted small mb-0">
+                Email a secure link so the recipient can sign in or register and open their publication. Works for existing customers or new accounts.
+            </p>
+        </div>
+        <a href="{{ route('admin.send-access.bulk') }}" class="btn btn-sm btn-outline-primary ms-auto flex-shrink-0">
+            Bulk send
+        </a>
     </div>
 
     @if($feedbackStatus)
