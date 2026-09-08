@@ -89,6 +89,19 @@
                     @endif
 
                     <div class="mb-3">
+                        <label class="form-label small">Company</label>
+                        <input type="text" class="form-control" wire:model="company" placeholder="e.g. Marks &amp; Spencer">
+                        @error('company') <span class="text-danger small">{{ $message }}</span> @enderror
+                        <div class="form-text">
+                            @if($recipientMode === 'existing')
+                                Prefilled from their account. Editing this updates it.
+                            @else
+                                Optional. Saved to their account when they claim the link.
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label small">Access type</label>
                         <select class="form-select" wire:model.live="accessType">
                             <option value="publication">Individual publication</option>

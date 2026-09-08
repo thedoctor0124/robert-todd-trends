@@ -11,6 +11,7 @@ class AccessInvite extends Model
         'token',
         'email',
         'invited_name',
+        'invited_company',
         'user_id',
         'access_type',
         'publication_id',

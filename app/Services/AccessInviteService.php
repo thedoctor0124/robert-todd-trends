@@ -21,12 +21,14 @@ class AccessInviteService
         ?User $existingUser = null,
         ?string $invitedName = null,
         int $expiresInDays = 30,
+        ?string $invitedCompany = null,
     ): AccessInvite {
         $email = strtolower(trim($email));
+        $invitedCompany = trim((string) $invitedCompany) ?: null;
 
         $invite = match ($accessType) {
-            'publication' => $this->makePublicationInvite($email, $itemId, $grantedBy, $existingUser, $invitedName, $expiresInDays),
-            'subscription' => $this->makeSubscriptionInvite($email, $itemId, $grantedBy, $existingUser, $invitedName, $expiresInDays),
+            'publication' => $this->makePublicationInvite($email, $itemId, $grantedBy, $existingUser, $invitedName, $expiresInDays, $invitedCompany),
+            'subscription' => $this->makeSubscriptionInvite($email, $itemId, $grantedBy, $existingUser, $invitedName, $expiresInDays, $invitedCompany),
             default => throw new InvalidArgumentException('Invalid access type.'),
         };
 
@@ -129,6 +131,7 @@ class AccessInviteService
         ?User $existingUser,
         ?string $invitedName,
         int $expiresInDays,
+        ?string $invitedCompany = null,
     ): AccessInvite {
         $publication = Publication::with('season')->findOrFail($publicationId);
 
@@ -136,6 +139,7 @@ class AccessInviteService
             'token' => Str::random(64),
             'email' => $email,
             'invited_name' => $invitedName ?? $existingUser?->name,
+            'invited_company' => $invitedCompany ?? $existingUser?->company,
             'user_id' => $existingUser?->id,
             'access_type' => 'publication',
             'publication_id' => $publication->id,
@@ -152,6 +156,7 @@ class AccessInviteService
         ?User $existingUser,
         ?string $invitedName,
         int $expiresInDays,
+        ?string $invitedCompany = null,
     ): AccessInvite {
         $season = Season::findOrFail($seasonId);
 
@@ -159,6 +164,7 @@ class AccessInviteService
             'token' => Str::random(64),
             'email' => $email,
             'invited_name' => $invitedName ?? $existingUser?->name,
+            'invited_company' => $invitedCompany ?? $existingUser?->company,
             'user_id' => $existingUser?->id,
             'access_type' => 'subscription',
             'publication_id' => null,

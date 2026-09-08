@@ -20,6 +20,8 @@ class SendAccess extends Component
 
     public string $invitedName = '';
 
+    public string $company = '';
+
     public string $accessType = 'publication';
 
     public int $grantItemId = 0;
@@ -44,6 +46,7 @@ class SendAccess extends Component
                 $this->userId = $user->id;
                 $this->email = $user->email;
                 $this->invitedName = $user->name;
+                $this->company = (string) $user->company;
             }
         }
 
@@ -67,6 +70,7 @@ class SendAccess extends Component
             if ($user) {
                 $this->email = $user->email;
                 $this->invitedName = $user->name;
+                $this->company = (string) $user->company;
             }
         }
     }
@@ -78,10 +82,19 @@ class SendAccess extends Component
 
         $this->validate($this->rules());
 
+        $company = trim($this->company);
+
         $existingUser = null;
         if ($this->recipientMode === 'existing') {
             $existingUser = User::findOrFail($this->userId);
             $this->email = $existingUser->email;
+
+            // The field is prefilled from the account, so treat an edit here as
+            // an update to it rather than silently discarding what was typed.
+            if ($company !== (string) $existingUser->company) {
+                $existingUser->update(['company' => $company === '' ? null : $company]);
+                $existingUser->refresh();
+            }
         }
 
         $invite = $service->createAndSend(
@@ -91,6 +104,7 @@ class SendAccess extends Component
             grantedBy: auth()->user()->email,
             existingUser: $existingUser,
             invitedName: $this->recipientMode === 'new' ? $this->invitedName : null,
+            invitedCompany: $company !== '' ? $company : null,
         );
 
         $this->sentClaimUrl = $invite->claimUrl();
@@ -158,6 +172,7 @@ class SendAccess extends Component
     private function rules(): array
     {
         $rules = [
+            'company' => 'nullable|string|max:255',
             'recipientMode' => 'required|in:existing,new',
             'accessType' => 'required|in:publication,subscription',
             'grantItemId' => 'required|integer|min:1',

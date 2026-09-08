@@ -103,6 +103,8 @@ class Claim extends Component
         $user = User::create([
             'name' => $this->name,
             'email' => $this->email,
+            // Carried from whatever the admin recorded when sending the invite.
+            'company' => $this->invite->invited_company,
             'password' => Hash::make($this->password),
             'is_admin' => str_ends_with($this->email, '@roberttodds.com'),
         ]);
