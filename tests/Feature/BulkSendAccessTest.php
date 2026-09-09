@@ -424,6 +424,159 @@ class BulkSendAccessTest extends TestCase
         $component->assertSet('sending', false);
     }
 
+    public function test_typing_a_known_email_fills_in_the_company_and_name(): void
+    {
+        User::factory()->create([
+            'email' => 'ada@vogue.com',
+            'name' => 'Ada Lovelace',
+            'company' => 'Vogue',
+        ]);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.email', 'ada@vogue.com')
+            ->assertSet('rows.0.name', 'Ada Lovelace')
+            ->assertSet('rows.0.company', 'Vogue')
+            ->assertSet('rows.0.matched', true)
+            ->assertSee('Existing customer');
+    }
+
+    public function test_the_lookup_is_case_insensitive(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada', 'company' => 'Vogue']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.email', '  ADA@Vogue.com  ')
+            ->assertSet('rows.0.company', 'Vogue')
+            ->assertSet('rows.0.matched', true);
+    }
+
+    public function test_the_lookup_never_overwrites_what_was_typed(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada Lovelace', 'company' => 'Vogue']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.company', 'Conde Nast')
+            ->set('rows.0.name', 'A. Lovelace')
+            ->set('rows.0.email', 'ada@vogue.com')
+            ->assertSet('rows.0.company', 'Conde Nast')
+            ->assertSet('rows.0.name', 'A. Lovelace')
+            ->assertSet('rows.0.matched', true);
+    }
+
+    public function test_an_unknown_email_leaves_the_row_alone(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.email', 'stranger@example.com')
+            ->assertSet('rows.0.company', '')
+            ->assertSet('rows.0.name', '')
+            ->assertSet('rows.0.matched', false)
+            ->assertDontSee('Existing customer');
+    }
+
+    public function test_a_matched_row_is_unmarked_when_the_email_is_changed(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada', 'company' => 'Vogue']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.email', 'ada@vogue.com')
+            ->assertSet('rows.0.matched', true)
+            ->set('rows.0.email', 'someone-else@example.com')
+            ->assertSet('rows.0.matched', false);
+    }
+
+    public function test_only_the_edited_row_is_looked_up(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada', 'company' => 'Vogue']);
+        User::factory()->create(['email' => 'ben@vogue.com', 'name' => 'Ben', 'company' => 'Vogue']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.1.email', 'ben@vogue.com')
+            ->assertSet('rows.1.name', 'Ben')
+            ->assertSet('rows.0.name', '')
+            ->assertSet('rows.0.matched', false);
+    }
+
+    public function test_a_csv_of_bare_emails_is_filled_in_from_the_accounts(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada Lovelace', 'company' => 'Vogue']);
+        User::factory()->create(['email' => 'cara@selfridges.com', 'name' => 'Cara Hughes', 'company' => 'Selfridges']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('csv', $this->csv('Email
+ada@vogue.com
+cara@selfridges.com
+stranger@example.com
+'))
+            ->assertCount('rows', 3)
+            ->assertSet('rows.0.name', 'Ada Lovelace')
+            ->assertSet('rows.0.company', 'Vogue')
+            ->assertSet('rows.0.matched', true)
+            ->assertSet('rows.1.name', 'Cara Hughes')
+            ->assertSet('rows.2.matched', false)
+            ->assertSet('rows.2.name', '');
+    }
+
+    /**
+     * A header that names only some columns must leave the others empty, not
+     * read whichever column happens to sit at that position.
+     */
+    public function test_a_header_naming_only_some_columns_leaves_the_rest_empty(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('csv', $this->csv("Email\nstranger@example.com\n"))
+            ->assertSet('rows.0.email', 'stranger@example.com')
+            ->assertSet('rows.0.company', '')
+            ->assertSet('rows.0.name', '');
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('csv', $this->csv("Email,Name\nstranger@example.com,Some One\n"))
+            ->assertSet('rows.0.email', 'stranger@example.com')
+            ->assertSet('rows.0.name', 'Some One')
+            ->assertSet('rows.0.company', '');
+    }
+
+    public function test_a_csv_does_not_overwrite_values_it_supplied(): void
+    {
+        User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada Lovelace', 'company' => 'Vogue']);
+
+        Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('csv', $this->csv('Email,Company,Name
+ada@vogue.com,Conde Nast,A. Lovelace
+'))
+            ->assertSet('rows.0.company', 'Conde Nast')
+            ->assertSet('rows.0.name', 'A. Lovelace')
+            ->assertSet('rows.0.matched', true);
+    }
+
+    public function test_a_filled_in_row_still_sends_correctly(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create(['email' => 'ada@vogue.com', 'name' => 'Ada Lovelace', 'company' => 'Vogue']);
+        $publication = $this->publication();
+
+        $component = Livewire::actingAs($this->admin())
+            ->test(BulkSendAccess::class)
+            ->set('rows.0.email', 'ada@vogue.com')
+            ->set('grantItemId', $publication->id)
+            ->call('startSend')
+            ->assertHasNoErrors();
+
+        $this->drain($component);
+
+        $this->assertSame($user->id, AccessInvite::where('email', 'ada@vogue.com')->value('user_id'));
+        $this->assertSame('Existing customer', $component->get('results')[0]['message']);
+    }
+
     public function test_processing_does_nothing_when_no_batch_is_running(): void
     {
         Livewire::actingAs($this->admin())

@@ -23,7 +23,7 @@ class BulkSendAccess extends Component
 
     public const MAX_ROWS = 200;
 
-    private const BLANK_ROW = ['company' => '', 'name' => '', 'email' => ''];
+    private const BLANK_ROW = ['email' => '', 'company' => '', 'name' => '', 'matched' => false];
 
     /** @var array<int, array{company: string, name: string, email: string}> */
     public array $rows = [];
@@ -82,6 +82,19 @@ class BulkSendAccess extends Component
         $this->csvMessage = null;
         $this->resetValidation();
         $this->resetFeedback();
+    }
+
+    /**
+     * Fill a row in from the account behind the email as soon as one is typed.
+     * Only blanks are filled: whatever the admin has already written wins.
+     */
+    public function updated(string $name, $value): void
+    {
+        if (! preg_match('/^rows\.(\d+)\.email$/', $name, $matches)) {
+            return;
+        }
+
+        $this->lookupRow((int) $matches[1]);
     }
 
     public function updatedCsv(): void
@@ -174,6 +187,74 @@ class BulkSendAccess extends Component
             'sentCount' => count(array_filter($this->results, fn ($r) => $r['status'] === 'sent')),
             'failedCount' => count(array_filter($this->results, fn ($r) => $r['status'] !== 'sent')),
         ])->layout('layouts.admin', ['title' => 'Bulk send access']);
+    }
+
+    private function lookupRow(int $index): void
+    {
+        if (! isset($this->rows[$index])) {
+            return;
+        }
+
+        $this->rows[$index]['matched'] = false;
+
+        $email = strtolower(trim($this->rows[$index]['email'] ?? ''));
+
+        if ($email === '') {
+            return;
+        }
+
+        $user = User::where('email', $email)->first(['name', 'company']);
+
+        if (! $user) {
+            return;
+        }
+
+        $this->rows[$index]['matched'] = true;
+
+        if (trim($this->rows[$index]['name'] ?? '') === '') {
+            $this->rows[$index]['name'] = (string) $user->name;
+        }
+
+        if (trim($this->rows[$index]['company'] ?? '') === '') {
+            $this->rows[$index]['company'] = (string) $user->company;
+        }
+    }
+
+    /**
+     * Same fill-in as lookupRow(), for a whole import, in one query rather than
+     * one per row — a spreadsheet of just email addresses is a normal case.
+     */
+    private function lookupImportedRows(): void
+    {
+        $emails = array_values(array_filter(array_map(
+            fn ($row) => strtolower(trim($row['email'] ?? '')),
+            $this->rows,
+        )));
+
+        if ($emails === []) {
+            return;
+        }
+
+        $users = User::whereIn('email', $emails)->get(['email', 'name', 'company'])
+            ->keyBy(fn ($user) => strtolower($user->email));
+
+        foreach ($this->rows as $index => $row) {
+            $user = $users->get(strtolower(trim($row['email'] ?? '')));
+
+            if (! $user) {
+                continue;
+            }
+
+            $this->rows[$index]['matched'] = true;
+
+            if (trim($row['name'] ?? '') === '') {
+                $this->rows[$index]['name'] = (string) $user->name;
+            }
+
+            if (trim($row['company'] ?? '') === '') {
+                $this->rows[$index]['company'] = (string) $user->company;
+            }
+        }
     }
 
     private function sendOne(AccessInviteService $service, array $row): array
@@ -293,10 +374,13 @@ class BulkSendAccess extends Component
                 $map = ['company' => 0, 'name' => 1, 'email' => 2];
             }
 
+            $cell = fn (?int $at) => $at === null ? '' : ($cells[$at] ?? '');
+
             $row = [
-                'company' => $cells[$map['company']] ?? '',
-                'name' => $cells[$map['name']] ?? '',
-                'email' => $cells[$map['email']] ?? '',
+                'email' => $cell($map['email']),
+                'company' => $cell($map['company']),
+                'name' => $cell($map['name']),
+                'matched' => false,
             ];
 
             if ($row['email'] === '' && $row['name'] === '' && $row['company'] === '') {
@@ -320,6 +404,7 @@ class BulkSendAccess extends Component
         }
 
         $this->rows = $imported;
+        $this->lookupImportedRows();
         $this->resetValidation();
         $this->resetFeedback();
 
@@ -351,10 +436,13 @@ class BulkSendAccess extends Component
             return null;
         };
 
+        // Columns the header does not mention map to null: falling back to a
+        // position would read some other column's value, e.g. an Email-only
+        // sheet putting the address into Company.
         return [
-            'company' => $find(['company', 'organisation', 'organization']) ?? 0,
-            'name' => $find(['name', 'full name', 'contact']) ?? 1,
-            'email' => $find(['email', 'email address']) ?? 2,
+            'company' => $find(['company', 'organisation', 'organization']),
+            'name' => $find(['name', 'full name', 'contact']),
+            'email' => $find(['email', 'email address']),
         ];
     }
 

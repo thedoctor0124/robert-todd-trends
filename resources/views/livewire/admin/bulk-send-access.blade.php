@@ -44,8 +44,8 @@
                     <thead>
                         <tr>
                             <th>Email</th>
-                            <th>Name</th>
                             <th>Company</th>
+                            <th>Name</th>
                             <th>Result</th>
                         </tr>
                     </thead>
@@ -53,8 +53,8 @@
                         @foreach($results as $result)
                             <tr>
                                 <td class="small">{{ $result['email'] }}</td>
-                                <td class="small">{{ $result['name'] }}</td>
                                 <td class="small">{{ $result['company'] ?: '—' }}</td>
+                                <td class="small">{{ $result['name'] }}</td>
                                 <td class="small">
                                     @if($result['status'] === 'sent')
                                         <span class="text-success">Sent</span>
@@ -77,7 +77,7 @@
             <div>
                 <h6 class="text-uppercase ls-wide small mb-2">Populate from a CSV</h6>
                 <p class="text-muted small mb-0">
-                    Columns <strong>Company, Name, Email</strong>. A header row is detected and may be in any
+                    Columns <strong>Email, Company, Name</strong>. A header row is detected and may be in any
                     order. Loading a file replaces the rows below.
                 </p>
             </div>
@@ -100,15 +100,28 @@
                 <table class="table table-sm table-minimal align-top mb-0">
                     <thead>
                         <tr>
+                            <th style="min-width: 240px;">Email</th>
                             <th style="min-width: 200px;">Company</th>
                             <th style="min-width: 180px;">Name</th>
-                            <th style="min-width: 240px;">Email</th>
                             <th style="width: 1%;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($rows as $index => $row)
                             <tr wire:key="row-{{ $index }}">
+                                <td>
+                                    {{-- .blur so the account lookup runs once they leave the
+                                         field, rather than on every keystroke. --}}
+                                    <input type="email" class="form-control form-control-sm"
+                                           wire:model.blur="rows.{{ $index }}.email" placeholder="name@company.com">
+                                    <div wire:loading wire:target="rows.{{ $index }}.email" class="text-muted small">
+                                        Checking&hellip;
+                                    </div>
+                                    @if($row['matched'] ?? false)
+                                        <div class="text-success small">Existing customer</div>
+                                    @endif
+                                    @error("rows.{$index}.email") <div class="text-danger small">{{ $message }}</div> @enderror
+                                </td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm"
                                            list="known-companies"
@@ -119,11 +132,6 @@
                                     <input type="text" class="form-control form-control-sm"
                                            wire:model="rows.{{ $index }}.name" placeholder="Full name">
                                     @error("rows.{$index}.name") <div class="text-danger small">{{ $message }}</div> @enderror
-                                </td>
-                                <td>
-                                    <input type="email" class="form-control form-control-sm"
-                                           wire:model="rows.{{ $index }}.email" placeholder="name@company.com">
-                                    @error("rows.{$index}.email") <div class="text-danger small">{{ $message }}</div> @enderror
                                 </td>
                                 <td class="text-end">
                                     <button type="button" wire:click="removeRow({{ $index }})"
@@ -152,7 +160,7 @@
                     Clear all
                 </button>
             </div>
-            <div class="form-text">Blank rows are ignored. Up to {{ $maxRows }} recipients at a time.</div>
+            <div class="form-text">Enter an email and we fill in the company and name if that customer is already on file. Blank rows are ignored. Up to {{ $maxRows }} recipients at a time.</div>
         </div>
 
         <div class="bg-white p-4" style="border: 1px solid rgba(56,56,56,0.06);">
