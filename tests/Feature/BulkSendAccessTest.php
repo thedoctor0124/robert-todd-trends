@@ -424,6 +424,21 @@ class BulkSendAccessTest extends TestCase
         $component->assertSet('sending', false);
     }
 
+    /**
+     * The lookup needs a server round-trip, and in Livewire 4 a blur modifier
+     * without live only syncs client-side — the hook never runs and the fields
+     * silently stay empty. A feature test cannot catch that (set() always goes
+     * to the server), so guard the markup that decides it.
+     */
+    public function test_the_email_field_commits_to_the_server_on_blur(): void
+    {
+        $this->actingAs($this->admin())
+            ->get(route('admin.send-access.bulk'))
+            ->assertOk()
+            ->assertSee('wire:model.live.blur="rows.0.email"', escape: false)
+            ->assertDontSee('wire:model.blur="rows.0.email"', escape: false);
+    }
+
     public function test_typing_a_known_email_fills_in_the_company_and_name(): void
     {
         User::factory()->create([

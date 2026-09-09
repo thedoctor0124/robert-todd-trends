@@ -110,10 +110,12 @@
                         @foreach($rows as $index => $row)
                             <tr wire:key="row-{{ $index }}">
                                 <td>
-                                    {{-- .blur so the account lookup runs once they leave the
-                                         field, rather than on every keystroke. --}}
+                                    {{-- .live.blur, not .blur: in Livewire 4 a blur modifier
+                                         without live only syncs client-side, so the lookup on
+                                         the server would never run. Blur rather than every
+                                         keystroke keeps it to one request per address. --}}
                                     <input type="email" class="form-control form-control-sm"
-                                           wire:model.blur="rows.{{ $index }}.email" placeholder="name@company.com">
+                                           wire:model.live.blur="rows.{{ $index }}.email" placeholder="name@company.com">
                                     <div wire:loading wire:target="rows.{{ $index }}.email" class="text-muted small">
                                         Checking&hellip;
                                     </div>
